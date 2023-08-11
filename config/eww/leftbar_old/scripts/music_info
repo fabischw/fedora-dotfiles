@@ -1,0 +1,96 @@
+#!/bin/bash
+
+## Get data
+STATUS=$(playerctl status)
+COVER="/tmp/.music_cover.jpg"
+MUSIC_DIR="$HOME/Music"
+
+## Get status
+get_status() {
+	if [[ $STATUS == "Playing" ]]; then
+		echo ""
+	else
+		echo ""
+	fi
+}
+
+## Get song
+get_song() {
+	song=$(playerctl metadata title)
+	if [[ -z "$song" ]]; then
+		echo "Offline"
+	else
+		echo "$song"
+	fi
+}
+
+## Get artist
+get_artist() {
+	artist=$(playerctl metadata artist)
+	if [[ -z "$artist" ]]; then
+		echo "no artist ?"
+	else
+		echo "$artist"
+	fi
+}
+
+## Get time
+get_time() {
+	time=$(mpc status | grep "%)" | awk '{print $4}' | tr -d '(%)')
+	if [[ -z "$time" ]]; then
+		echo "0"
+	else
+		echo "$time"
+	fi
+}
+get_ctime() {
+	ctime=$(mpc status | grep "#" | awk '{print $3}' | sed 's|/.*||g')
+	if [[ -z "$ctime" ]]; then
+		echo "0:00"
+	else
+		echo "$ctime"
+	fi
+}
+get_ttime() {
+	ttime=$(mpc -f %time% current)
+	if [[ -z "$ttime" ]]; then
+		echo "0:00"
+	else
+		echo "$ttime"
+	fi
+}
+
+## Get cover
+get_cover() {
+	./../../../system_scripts/get_spotify_art
+	echo "/tmp/spotify_art/spotify/cover.png"
+}
+
+## Execute accordingly
+if [[ "$1" == "--song" ]]; then
+	get_song
+elif [[ "$1" == "--artist" ]]; then
+	get_artist
+elif [[ "$1" == "--status" ]]; then
+	get_status
+elif [[ "$1" == "--time" ]]; then
+	get_time
+elif [[ "$1" == "--ctime" ]]; then
+	get_ctime
+elif [[ "$1" == "--ttime" ]]; then
+	get_ttime
+elif [[ "$1" == "--cover" ]]; then
+	get_cover
+elif [[ "$1" == "--toggle" ]]; then
+	playerctl play-pause
+elif [[ "$1" == "--next" ]]; then
+	{
+		playerctl next
+		get_cover
+	}
+elif [[ "$1" == "--prev" ]]; then
+	{
+		playerctl previous
+		get_cover
+	}
+fi
